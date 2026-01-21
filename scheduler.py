@@ -56,7 +56,7 @@ schedule.every().day.at("00:00").do(delete_pdf_files)
 # Alternative: Hapus setiap 6 jam sekali (uncomment jika ingin ini)
 # schedule.every(6).hours.do(delete_pdf_files)
 
-print(f"[{datetime.now()}] Scheduler dimulai - Akan menghapus PDF setiap 10 detik")
+print(f"[{datetime.now()}] Scheduler dimulai - Akan menghapus PDF setiap 00:00 ")
 
 try:
     while True:
