@@ -21,7 +21,7 @@ app.add_middleware(
 
 # Direktori untuk upload
 UPLOAD_DIR = Path("uploads")
-RESULTS_DIR = Path("results")
+RESULTS_DIR = Path("outputs")
 UPLOAD_DIR.mkdir(exist_ok=True)
 RESULTS_DIR.mkdir(exist_ok=True)
 
@@ -29,7 +29,7 @@ RESULTS_DIR.mkdir(exist_ok=True)
 extracted_data = []
 
 
-@app.post("/upload")
+@app.post("/uploads")
 async def upload_pdfs(files: list[UploadFile] = File(...), download_only: bool = Query(False)):
     """Upload multiple PDF files, ekstrak data, dan generate Excel otomatis
     
@@ -93,7 +93,7 @@ async def upload_pdfs(files: list[UploadFile] = File(...), download_only: bool =
         return {
             "status": "success" if excel_filename else "failed",
             "excel_file": excel_filename,
-            "excel_download_url": f"/download-excel/{excel_filename}" if excel_filename else None,
+            "excel_download_url": f"/downloads/{excel_filename}" if excel_filename else None,
             "total_records": len(extracted_data)
         }
     
@@ -103,7 +103,7 @@ async def upload_pdfs(files: list[UploadFile] = File(...), download_only: bool =
         "success": len(extracted_data),
         "failed": len(errors),
         "excel_file": excel_filename,
-        "excel_download_url": f"/download-excel/{excel_filename}" if excel_filename else None,
+        "excel_download_url": f"/downloads/{excel_filename}" if excel_filename else None,
         "errors": errors if errors else None
     }
 
@@ -127,7 +127,7 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/download-excel/{filename}")
+@app.get("/downloads/{filename}")
 async def download_excel(filename: str):
     """Download Excel file dari results directory"""
     try:
@@ -164,7 +164,7 @@ async def list_files():
                     "name": f.name,
                     "size": f.stat().st_size,
                     "created": datetime.fromtimestamp(f.stat().st_ctime).isoformat(),
-                    "download_url": f"/download-excel/{f.name}"
+                    "download_url": f"/downloads/{f.name}"
                 }
                 for f in sorted(excel_files, reverse=True)
             ],
@@ -183,4 +183,4 @@ async def list_files():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8443)

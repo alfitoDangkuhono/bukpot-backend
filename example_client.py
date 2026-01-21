@@ -6,7 +6,7 @@ import requests
 import json
 from pathlib import Path
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8443"
 
 def health_check():
     """Check API health"""
@@ -31,7 +31,7 @@ def upload_pdfs(pdf_files: list[str]):
         return
     
     try:
-        response = requests.post(f"{BASE_URL}/upload", files=files)
+        response = requests.post(f"{BASE_URL}/uploads", files=files)
         result = response.json()
         
         print(f"Upload Result:")
