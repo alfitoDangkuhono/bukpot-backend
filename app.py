@@ -120,12 +120,13 @@ async def upload_pdfs(files: list[UploadFile] = File(...), download_only: bool =
     
     # Full response
     return {
-        "total_files": len(files),
-        "success": len(extracted_data),
-        "failed": len(errors),
-        "excel_file": excel_filename,
-        "excel_download_url": f"/downloads/{excel_filename}" if excel_filename else None,
-        "errors": errors if errors else None
+        # "total_files": len(files),
+        "message": "ok" if len(errors) == 0 else "failed",
+        # "success": len(extracted_data),
+        # "failed": len(errors),
+        "filename": excel_filename,
+        # "excel_download_url": f"/downloads/{excel_filename}" if excel_filename else None,
+        # "errors": errors if errors else None
     }
 
 
