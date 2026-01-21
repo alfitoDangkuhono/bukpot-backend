@@ -4,8 +4,17 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 from pathlib import Path
 import shutil
+import logging
 from extractor import extract_from_file
 from datetime import datetime
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
 # Setup
 app = FastAPI(title="BPPU PDF Extractor API", version="1.0.0")
@@ -39,15 +48,20 @@ async def upload_pdfs(files: list[UploadFile] = File(...), download_only: bool =
     global extracted_data
     
     if not files:
+        logger.warning("Upload request tanpa file")
         raise HTTPException(status_code=400, detail="Tidak ada file yang diunggah")
     
+    logger.info(f"Mulai upload {len(files)} file(s)")
     errors = []
     extracted_data = []
     
-    for file in files:
+    for idx, file in enumerate(files, 1):
         try:
+            logger.info(f"[{idx}/{len(files)}] Memproses file: {file.filename}")
+            
             # Validasi file type
             if not file.filename.lower().endswith(".pdf"):
+                logger.error(f"File '{file.filename}' bukan PDF")
                 errors.append({
                     "file": file.filename,
                     "error": "File harus berformat PDF"
@@ -56,15 +70,19 @@ async def upload_pdfs(files: list[UploadFile] = File(...), download_only: bool =
             
             # Save file
             file_path = UPLOAD_DIR / file.filename
+            logger.info(f"Menyimpan file: {file.filename}")
             with open(file_path, "wb") as f:
                 f.write(await file.read())
             
             # Ekstrak data
+            logger.info(f"Mengekstrak data dari: {file.filename}")
             data = extract_from_file(str(file_path))
             data["file_name"] = file.filename
             extracted_data.append(data)
+            logger.info(f"✓ File '{file.filename}' berhasil diproses")
             
         except Exception as e:
+            logger.error(f"✗ Error processing '{file.filename}': {str(e)}")
             errors.append({
                 "file": file.filename,
                 "error": str(e)
@@ -74,12 +92,15 @@ async def upload_pdfs(files: list[UploadFile] = File(...), download_only: bool =
     excel_file = None
     if extracted_data:
         try:
+            logger.info(f"Membuat Excel dari {len(extracted_data)} record(s)")
             df = pd.DataFrame(extracted_data)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             excel_file = RESULTS_DIR / f"hasil_bppu_{timestamp}.xlsx"
             df.to_excel(excel_file, index=False)
             excel_filename = excel_file.name
+            logger.info(f"✓ Excel berhasil dibuat: {excel_filename}")
         except Exception as e:
+            logger.error(f"✗ Gagal generate Excel: {str(e)}")
             errors.append({
                 "file": "Excel Export",
                 "error": f"Gagal generate Excel: {str(e)}"
