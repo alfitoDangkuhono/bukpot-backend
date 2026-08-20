@@ -1,5 +1,5 @@
 services:
-  bppu_api:
+  convert_bukpot_api:
     build: .
     image: alfitodangkuhono/bukpot-backend:latest
     container_name: bppu_pdf_api
