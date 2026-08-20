@@ -1,11 +1,10 @@
-version: '1.0'
-
 services:
   bppu_api:
     build: .
+    image: alfitodangkuhono/bukpot-backend:latest
     container_name: bppu_pdf_api
     ports:
-      - "8443:8443"
+      - "8443"
     volumes:
       - .:/app
     restart: unless-stopped
