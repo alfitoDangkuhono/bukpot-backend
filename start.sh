@@ -22,7 +22,7 @@ SCHEDULER_PID=$!
 gunicorn app:app \
   -k uvicorn.workers.UvicornWorker \
   --bind 0.0.0.0:8443 \
-  --workers 2 \
+  --workers 1 \
   --timeout 120
 
 # Kalau server berhenti, matikan scheduler juga

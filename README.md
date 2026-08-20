@@ -39,46 +39,34 @@ Status check server
 
 ### 2. Upload & Extract Multiple PDFs
 ```
-POST /upload
+POST /uploads
 ```
-Upload multiple PDF files dan ekstrak data otomatis
+Upload hanya menyimpan file dan memasukkan proses konversi ke background queue.
 
 **Request:**
 - Multipart form dengan file array
 - Max files per request: unlimited
 
-**Response:**
+**Response (HTTP 202):**
 ```json
 {
-  "total_files": 3,
-  "success": 3,
-  "failed": 0,
-  "results": [
-    {
-      "file": "bppu_001.pdf",
-      "status": "success",
-      "data": {
-        "No": "25001712N",
-        "Nomor Bukti Potong": "25001712N",
-        "Masa Pajak": "01-2025",
-        "Sifat": "TIDAK FINAL",
-        "Pembetulan": "NORMAL",
-        "Kode Objek Pajak": "24-100-02",
-        "Objek Pajak": "Royalti",
-        "Jumlah Penghasilan Bruto": 38110959.0,
-        "Tarif": 2.0,
-        "PPh Dipotong": 762219.0,
-        ...
-      }
-    }
-  ],
-  "errors": null
+  "status": "queued",
+  "job_id": "<job-id>",
+  "status_url": "/jobs/<job-id>",
+  "total_files": 3
 }
 ```
 
+### 3. Check Conversion Job
+```
+GET /jobs/{job_id}
+```
+Polling endpoint untuk memantau `queued`, `processing`, `completed`, `partial`, atau `failed`.
+Saat selesai, response menyediakan `excel_download_url` dan detail `errors` bila ada.
+
 ---
 
-### 3. Extract Single PDF
+### 4. Extract Single PDF
 ```
 POST /extract-single
 ```
@@ -191,9 +179,12 @@ Setiap record ekstraksi berisi fields berikut:
 
 **Upload files:**
 ```bash
-curl -X POST "http://localhost:8000/upload" \
+curl -X POST "http://localhost:8443/uploads" \
   -F "files=@bppu_001.pdf" \
   -F "files=@bppu_002.pdf"
+
+# Gunakan job_id dari response upload untuk memantau proses
+curl -X GET "http://localhost:8443/jobs/<job-id>"
 ```
 
 **Get results:**
